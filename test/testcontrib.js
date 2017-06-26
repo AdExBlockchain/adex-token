@@ -14,16 +14,29 @@ contract('ADXToken', function(accounts) {
   var adexFundAddr = web3.eth.accounts[8];
   var prebuyAddr = web3.eth.accounts[1]; // one of the pre-buy addresses
 
-  it("should start with 0 eth", function() {
-    //accounts[0]
-    return deployed.then(function(instance) {
-      crowdsale = instance;
-      return instance.etherRaised.call();
-    }).then(function(eth) {        
-        assert.equal(eth.valueOf(), 0);
+  it("initialize contract", function() {
+    var startDate = Math.floor(Date.now()/1000);
+
+    return ADXToken.new(
+      ownerAddr, // multisig
+      adexTeamAddr, // team, whre 2% wings and 2% bounty will be received
+      startDate+7*24*60*60, // public sale start
+      startDate, // private sale start
+      30800*1000000000000000000, // ETH hard cap, in wei
+      web3.eth.accounts[1], 5047335,
+      web3.eth.accounts[2], 5047335, // TODO: change accordingly
+      web3.eth.accounts[3], 2340000 
+    ).then(function(_crowdsale) {
+      crowdsale = _crowdsale
     })
   });
 
+  it("should start with 0 eth", function() {
+    return crowdsale.etherRaised.call()
+    .then(function(eth) {        
+        assert.equal(eth.valueOf(), 0);
+    })
+  });
 
   it("pre-buy state: cannot send ETH in exchange for tokens", function() {
     return new Promise((resolve, reject) => {
@@ -179,6 +192,17 @@ contract('ADXToken', function(accounts) {
     })
   })
 
+  // should allow for calling grantVested()
+  it('call grantVested()', () => {
+    var start;
+    return crowdsale.grantVested(adexTeamAddr, adexFundAddr, { from: ownerAddr })
+    .then(function() {
+        start = Math.floor(Date.now()/1000);
+    })
+  })
+
+  // vested tokens
+
   /*
   it('Change time to 40 days after', () => {
     return new Promise((resolve, reject) => {
@@ -194,18 +218,5 @@ contract('ADXToken', function(accounts) {
   })
   */
 
-  // should allow for calling grantVested()
-  it('call grantVested()', () => {
-    var start;
-    return crowdsale.grantVested(adexTeamAddr, adexFundAddr, { from: ownerAddr })
-    .then(function() {
-        start = Math.floor(Date.now()/1000);
-    })
-  })
-  // vested tokens
-
-  // hard cap can be reached
-
-  // bounty tokens can be distributed
 
 });
