@@ -1,32 +1,41 @@
 var ADXToken = artifacts.require("./ADXToken.sol");
 var Promise = require('bluebird')
+var time = require('../helpers/time')
 
 contract('ADXToken', function(accounts) {
 
   var crowdsale;
-  var token;
-  var deployed = ADXToken.deployed();
 
   var EXPECT_FOR_ONE_ETH = 11700000;
 
+  var startDate;
   var ownerAddr = web3.eth.accounts[0];
   var adexTeamAddr = web3.eth.accounts[9];
   var adexFundAddr = web3.eth.accounts[8];
   var prebuyAddr = web3.eth.accounts[1]; // one of the pre-buy addresses
 
-  it("initialize contract", function() {
-    var startDate = Math.floor(Date.now()/1000);
+  var participiants = web3.eth.accounts.slice(4, 8).map(account => {
+    return {
+      account: account,
+      sent: web3.toWei(1, 'ether')
+    }
+  })
 
-    return ADXToken.new(
-      ownerAddr, // multisig
-      adexTeamAddr, // team, whre 2% wings and 2% bounty will be received
-      startDate+7*24*60*60, // public sale start
-      startDate, // private sale start
-      30800*1000000000000000000, // ETH hard cap, in wei
-      web3.eth.accounts[1], 5047335,
-      web3.eth.accounts[2], 5047335, // TODO: change accordingly
-      web3.eth.accounts[3], 2340000 
-    ).then(function(_crowdsale) {
+  it("initialize contract", function() {
+    return time.blockchainTime(web3)
+    .then(function(startDate) {
+
+      return ADXToken.new(
+        ownerAddr, // multisig
+        adexTeamAddr, // team, whre 2% wings and 2% bounty will be received
+        startDate+7*24*60*60, // public sale start
+        startDate, // private sale start
+        web3.toWei(30800, 'ether'), // ETH hard cap, in wei
+        web3.eth.accounts[1], 5047335,
+        web3.eth.accounts[2], 5047335, // TODO: change accordingly
+        web3.eth.accounts[3], 2340000 
+      )
+    }).then(function(_crowdsale) {
       crowdsale = _crowdsale
     })
   });
@@ -67,15 +76,23 @@ contract('ADXToken', function(accounts) {
   });
 
   it("pre-buy state: can pre-buy, vested tokens are properly vested", function() {
-    var start = Math.floor(Date.now()/1000);
     var vestedPortion = 15295105;
     var totalExpected = 50750001;
+    var preBuyEth = 3.030333;
     var unvestedPortion = totalExpected-vestedPortion;
-    return crowdsale.preBuy({
-      from: prebuyAddr,
-      value: web3.toWei(3.030333, 'ether'),
-      gas: 260000
-    }).then(() => {          
+
+    var start
+    return time.blockchainTime(web3)
+    .then(function(_start) {
+      start = _start
+
+      return crowdsale.preBuy({
+        from: prebuyAddr,
+        value: web3.toWei(preBuyEth, 'ether'),
+        gas: 260000
+      })
+    })
+    .then(() => {          
       return crowdsale.balanceOf(prebuyAddr)
     })
     .then((res) => {
@@ -109,13 +126,6 @@ contract('ADXToken', function(accounts) {
   })
 
   it('Should allow to send ETH in exchange of Tokens', () => {
-    var participiants = web3.eth.accounts.slice(4, 8).map(account => {
-      return {
-        account: account,
-        sent: web3.toWei(1, 'ether')
-      }
-    })
-
     const currentParticipiants = participiants.slice(0, 3)
 
     return Promise.all(currentParticipiants.map(participiant => {
@@ -137,9 +147,6 @@ contract('ADXToken', function(accounts) {
       })
     }))
   })
-
-
-  // pre-sale
 
   // tokens not transferrable
 
@@ -176,6 +183,13 @@ contract('ADXToken', function(accounts) {
     })
   })
 
+  it("should track raised eth", function() {
+    return crowdsale.etherRaised.call()
+    .then(function(eth) {        
+        assert.equal(eth.valueOf(), 6030333000000000000); // preBuy eth + 3 eth 
+    })
+  });
+
   // tokens transferable after end of crowdsale
   it('Should allow to transfer tokens after end of crowdsale', () => {
     return crowdsale.transfer(web3.eth.accounts[4], 50, {
@@ -196,9 +210,7 @@ contract('ADXToken', function(accounts) {
   it('call grantVested()', () => {
     var start;
     return crowdsale.grantVested(adexTeamAddr, adexFundAddr, { from: ownerAddr })
-    .then(function() {
-        start = Math.floor(Date.now()/1000);
-    })
+   // .then(function() { })
   })
 
   // vested tokens
