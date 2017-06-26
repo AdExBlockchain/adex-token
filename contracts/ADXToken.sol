@@ -73,7 +73,8 @@ contract ADXToken is VestedToken {
 
   //Is currently the crowdfund period
   modifier is_crowdfund_period() {
-    if (now < publicStartTime || now >= publicEndTime) throw;
+    if (now < publicStartTime) throw;
+    if (isCrowdfundCompleted()) throw;
     _;
   }
 
@@ -83,7 +84,7 @@ contract ADXToken is VestedToken {
     _;
   }
   function isCrowdfundCompleted() internal returns (bool) {
-    if (now > publicEndTime || ADXSold >= ALLOC_CROWDSALE) return true;
+    if (now > publicEndTime || ADXSold >= ALLOC_CROWDSALE || etherRaised >= hardcapInEth) return true;
     return false;
   }
 
@@ -183,8 +184,6 @@ contract ADXToken is VestedToken {
     internal
     returns (uint o_amount)
   {
-    if (etherRaised > hardcapInEth) throw;
-
     o_amount = calcAmount(msg.value, _rate);
 
     if (o_amount > _remaining) throw;
