@@ -48,7 +48,6 @@ contract ADXToken is VestedToken {
   //Special Addresses
   address public multisigAddress; // Address to which all ether flows.
   address public adexTeamAddress; // Address to which ALLOC_TEAM, ALLOC_BOUNTIES, ALLOC_WINGS is (ultimately) sent to.
-  address public adexFundAddress;
   address public ownerAddress; // Address of the contract owner. Can halt the crowdsale.
   address public preBuy1; // Address used by pre-buy
   address public preBuy2; // Address used by pre-buy
@@ -108,7 +107,6 @@ contract ADXToken is VestedToken {
   function ADXToken(
     address _multisig,
     address _adexTeam,
-    address _adexFund,
     uint _publicStartTime,
     uint _privateStartTime,
     uint _hardcapInEth,
@@ -122,7 +120,6 @@ contract ADXToken is VestedToken {
     publicEndTime = _publicStartTime + 4 weeks;
     multisigAddress = _multisig;
     adexTeamAddress = _adexTeam;
-    adexFundAddress = _adexFund;
 
     hardcapInEth = _hardcapInEth;
 
@@ -236,21 +233,22 @@ contract ADXToken is VestedToken {
   }
 
   // To be called at the end of crowdfund period
-  function grantVested()
+  // WARNING: transfer(), which is called by grantVestedTokens(), wants a minimum message length
+  function grantVested(address _adexTeamAddress, address _adexFundAddress)
     is_crowdfund_completed
     only_owner
     is_not_halted
   {
     // Grant tokens pre-allocated for the team
     grantVestedTokens(
-      adexTeamAddress, ALLOC_TEAM,
+      _adexTeamAddress, ALLOC_TEAM,
       uint64(now), uint64(now) + 91 days , uint64(now) + 365 days, 
       false, false
     );
 
     // Grant tokens that remain after crowdsale to the AdEx fund, vested for 2 years
     grantVestedTokens(
-      adexFundAddress, balances[ownerAddress],
+      _adexFundAddress, balances[ownerAddress],
       uint64(now), uint64(now) + 182 days , uint64(now) + 730 days, 
       false, false
     );

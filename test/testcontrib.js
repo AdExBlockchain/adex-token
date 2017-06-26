@@ -9,6 +9,7 @@ contract('ADXToken', function(accounts) {
 
   var EXPECT_FOR_ONE_ETH = 11700000;
 
+  var ownerAddr = web3.eth.accounts[0];
   var adexTeamAddr = web3.eth.accounts[9];
   var adexFundAddr = web3.eth.accounts[8];
   var prebuyAddr = web3.eth.accounts[1]; // one of the pre-buy addresses
@@ -196,11 +197,8 @@ contract('ADXToken', function(accounts) {
   // should allow for calling grantVested()
   it('call grantVested()', () => {
     var start;
-    return crowdsale.ownerAddress.call()
-    .then(function(ownerAddr) {
-        console.log(ownerAddr, adexTeamAddr, adexFundAddr)
-        return crowdsale.grantVested({ from: ownerAddr })
-    }).then(function() {
+    return crowdsale.grantVested(adexTeamAddr, adexFundAddr, { from: ownerAddr })
+    .then(function() {
         start = Math.floor(Date.now()/1000);
     })
   })
