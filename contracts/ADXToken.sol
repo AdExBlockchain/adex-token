@@ -127,7 +127,7 @@ contract ADXToken is VestedToken {
     preBuy1 = _prebuy1;
     preBuyPrice1 = _preBuyPrice1;
     preBuy2 = _prebuy2;
-    preBuyPrice3 = _preBuyPrice2;
+    preBuyPrice2 = _preBuyPrice2;
     preBuy3 = _prebuy3;
     preBuyPrice3 = _preBuyPrice3;
 
