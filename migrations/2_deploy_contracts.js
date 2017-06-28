@@ -10,7 +10,7 @@ module.exports = function(deployer) {
 	startDate, // private sale start
   	30800*1000000000000000000, // ETH hard cap, in wei
   	web3.eth.accounts[1], 5047335,
-  	web3.eth.accounts[2], 5047335, // TODO: change accordingly
-  	web3.eth.accounts[3], 2340000 
+  	web3.eth.accounts[2], 2053387,
+  	web3.eth.accounts[3], 2340000
   );
 };
