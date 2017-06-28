@@ -40,7 +40,7 @@ contract('ADXToken', function(accounts) {
   }
 
   it("initialize contract", function() {
-    return newSC(blockchainDate()).then(function() { // ugly hack to get .blockNumber updated :( )
+    return newSC(blockchainDate()).then(function() { // ugly hack to get latest block (+timestamp) updated :( )
       var startDate = blockchainDate()
       return newSC(startDate)
     })
