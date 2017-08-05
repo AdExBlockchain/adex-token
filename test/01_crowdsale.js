@@ -13,10 +13,10 @@ contract('ADXToken', function(accounts) {
   var adexTeamAddr1 = web3.eth.accounts[7]; // wings dao, bounties
   var adexTeamAddr2 = web3.eth.accounts[9]; // vested tokens
   var adexFundAddr = web3.eth.accounts[8];
-  var prebuyAddr = web3.eth.accounts[1]; // one of the pre-buy addresses
+  var prebuyAddr = web3.eth.accounts[1]; 
 
-  // accounts 4, 5, 6
-  var participiants = web3.eth.accounts.slice(4, 7).map(account => {
+  // accounts 4, 5
+  var participiants = web3.eth.accounts.slice(4, 6).map(account => {
     return {
       account: account,
       sent: web3.toWei(1, 'ether')
@@ -34,8 +34,8 @@ contract('ADXToken', function(accounts) {
         startDate, // private sale start
         web3.toWei(30800, 'ether'), // ETH hard cap, in wei
         web3.eth.accounts[1], 5047335,
-        web3.eth.accounts[2], 5047335, // TODO: change accordingly
-        web3.eth.accounts[3], 2340000 
+        web3.eth.accounts[2], 2053388, 
+        web3.eth.accounts[3], 2340000
       )
     }).then(function(_crowdsale) {
       crowdsale = _crowdsale
@@ -77,43 +77,48 @@ contract('ADXToken', function(accounts) {
     })
   });
 
-  it("pre-buy state: can pre-buy, vested tokens are properly vested", function() {
-    var vestedPortion = 15295105;
-    var totalExpected = 50750001;
-    var preBuyEth = 3.030333;
-    var unvestedPortion = totalExpected-vestedPortion;
+  function preBuyTest(vested, expected, eth, prebuyAddr) {
+    return function() {
+      var vestedPortion = vested;
+      var totalExpected = expected;
+      var preBuyEth = eth;
+      var unvestedPortion = totalExpected-vestedPortion;
 
-    var start
-    return time.blockchainTime(web3)
-    .then(function(_start) {
-      start = _start
+      var start
+      return time.blockchainTime(web3)
+      .then(function(_start) {
+        start = _start
 
-      return crowdsale.preBuy({
-        from: prebuyAddr,
-        value: web3.toWei(preBuyEth, 'ether'),
-        gas: 260000
+        return crowdsale.preBuy({
+          from: prebuyAddr,
+          value: web3.toWei(preBuyEth, 'ether'),
+          gas: 260000
+        })
       })
-    })
-    .then(() => {          
-      return crowdsale.balanceOf(prebuyAddr)
-    })
-    .then((res) => {
-        assert.equal(totalExpected, res.toNumber())
-        return crowdsale.transferableTokens(prebuyAddr, start)
-    })
-    .then(function(transferrable) {
-        // 15295105 is vested portion at the hardcoded vested bonus
-       assert.equal(unvestedPortion, transferrable.toNumber())
-       return crowdsale.transferableTokens(prebuyAddr, start+90*24*60*60)
-    }).then(function(transferrableBeforeCliff) {
-        assert.equal(unvestedPortion, transferrableBeforeCliff.toNumber())
-       return crowdsale.transferableTokens(prebuyAddr, start+91*24*60*60+1)
-    }).then(function(transfrrableAfterCliff) {
-        // 1/4 of the tokens should now be non-vested
-        assert.equal(Math.round(unvestedPortion+(91/365*vestedPortion)), transfrrableAfterCliff.toNumber())
-    })
-  });
-  
+      .then(() => {          
+        return crowdsale.balanceOf(prebuyAddr)
+      })
+      .then((res) => {
+          assert.equal(totalExpected, res.toNumber())
+          return crowdsale.transferableTokens(prebuyAddr, start)
+      })
+      .then(function(transferrable) {
+          // 15295105 is vested portion at the hardcoded vested bonus
+         assert.equal(unvestedPortion, transferrable.toNumber())
+         return crowdsale.transferableTokens(prebuyAddr, start+90*24*60*60)
+      }).then(function(transferrableBeforeCliff) {
+          assert.equal(unvestedPortion, transferrableBeforeCliff.toNumber())
+         return crowdsale.transferableTokens(prebuyAddr, start+91*24*60*60+1)
+      }).then(function(transfrrableAfterCliff) {
+          // 1/4 of the tokens should now be non-vested
+          assert.equal(Math.floor(unvestedPortion+(91/365*vestedPortion)), transfrrableAfterCliff.toNumber())
+      })
+    };
+  }
+  it("pre-buy state: can pre-buy (addr1), vested tokens are properly vested", preBuyTest(15295105, 50750001, 3.030333, web3.eth.accounts[1]));
+  it("pre-buy state: can pre-buy (addr2), vested tokens are properly vested", preBuyTest( 7577001, 50750001, 3.690000, web3.eth.accounts[2]));
+  it("pre-buy state: can pre-buy (addr3), vested tokens are properly vested", preBuyTest( 3436058, 20616350, 1.468401, web3.eth.accounts[3]));
+
   it('Change time to crowdsale open', () => {
     return new Promise((resolve, reject) => {
          web3.currentProvider.sendAsync({
@@ -188,7 +193,7 @@ contract('ADXToken', function(accounts) {
   it("should track raised eth", function() {
     return crowdsale.etherRaised.call()
     .then(function(eth) {        
-        assert.equal(eth.valueOf(), 6030333000000000000); // preBuy eth + 3 eth 
+        assert.equal(eth.valueOf(), 10188734000000000000); // preBuy eth + 3 eth 
     })
   });
 
@@ -223,7 +228,7 @@ contract('ADXToken', function(accounts) {
 
   // vested tokens
   it('vesting schedule - check cliff & vesting afterwards (advances time)', () => {
-    var recepient = web3.eth.accounts[2]; // 2, 3 are set as pre-buy but not used
+    var recepient = web3.eth.accounts[6];
 
     var cliffDays = 92;
     var halfDays = 182.5;
