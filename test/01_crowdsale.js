@@ -44,8 +44,16 @@ contract('ADXToken', function(accounts) {
 
   it("should start with 0 eth", function() {
     return crowdsale.etherRaised.call()
-    .then(function(eth) {        
+    .then(function(eth) {
         assert.equal(eth.valueOf(), 0);
+    })
+  });
+
+
+  it("totalSupply is right", function() {
+    return crowdsale.totalSupply.call()
+    .then(function(sup) {
+        assert.equal(sup.valueOf(), 100 * 1000 * 1000 * 10000);
     })
   });
 
