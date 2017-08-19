@@ -6,6 +6,7 @@
   "repository": "https://github.com/AdExBlockchain/adex-token",
   "author": "Ivo Georgiev, WINGS, others",
   "license": "MIT",
+  "scripts": { "test": "truffle test" },
   "dependencies": {
     "bluebird": "^3.5.0",
     "truffle": "^3.2.5"
