@@ -15,7 +15,7 @@ contract ADXToken is VestedToken {
   string public name = "AdEx";
   string public symbol = "ADX";
   uint public decimals = 4;
-
+  
   //CONSTANTS
   //Time limits
   uint public constant STAGE_ONE_TIME_END = 24 hours; // first day bonus
@@ -37,6 +37,9 @@ contract ADXToken is VestedToken {
   uint public constant ALLOC_WINGS =         2000000*DECIMALS;
   uint public constant ALLOC_CROWDSALE =    80000000*DECIMALS;
   uint public constant PREBUY_PORTION_MAX = 20000000*DECIMALS; // this is redundantly more than what will be pre-sold
+ 
+  // More erc20
+  uint public totalSupply = 100000000*DECIMALS; 
   
   //ASSIGNED IN INITIALIZATION
   //Start and end times
