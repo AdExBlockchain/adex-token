@@ -16,4 +16,4 @@ Those issues are deployed in production, but fixed in this repository.
 
 ### Audit
 
-This repository passed audit by NewAlchemy.io ; full report and details will be published soon
+This repository passed audit by NewAlchemy.io ; full report is published here: https://my.pcloud.com/publink/show?code=XZnkTiZ4R019ETo1WSkVqYbdp06KyvpQSoy
