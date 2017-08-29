@@ -18,7 +18,7 @@ contract('ADXToken', function(accounts) {
   var participiants = web3.eth.accounts.slice(3, 8).map(account => {
     return {
       account: account,
-      sent: web3.toWei(1, 'ether')
+      sent: web3.toWei(10, 'ether')
     }
   })
 
@@ -64,7 +64,7 @@ contract('ADXToken', function(accounts) {
         web3.eth.sendTransaction({
           from: participiant.account,
           to: crowdsale.address,
-          value: participiant.sent,
+          value: web3.toWei(1, 'ether'),
           gas: 130000
         }, (err) => {
           if (err) reject(err) 
@@ -107,7 +107,7 @@ contract('ADXToken', function(accounts) {
       web3.eth.sendTransaction({
         from: one.account,
         to: crowdsale.address,
-        value: one.sent,
+        value: web3.toWei(1, 'ether'),
         gas: 130000
       }, (err) => {
         if (err) reject(err) 
@@ -116,13 +116,29 @@ contract('ADXToken', function(accounts) {
         web3.eth.sendTransaction({
           from: two.account,
           to: crowdsale.address,
-          value: two.sent,
+          value: web3.toWei(1, 'ether'),
           gas: 130000
         }, (err) => {
           if (!err) throw new Error('should not allow second to participate, hard cap should be reached')
           resolve()
         })
       })
+    })
+  })
+
+  it("Should not allow to send ETH in exchange of Tokens after crowdsale end", function() {
+    const three = participiants[4]
+
+    return new Promise((resolve, reject) => {
+      web3.eth.sendTransaction({
+        from: three.account,
+        to: crowdsale.address,
+        value: web3.toWei(0.5, 'ether'),
+        gas: 130000
+      })
+    }).then(function() { throw new Error('Cant be here'); })
+    .catch(function(err) {
+      assert.equal(err.message, 'VM Exception while processing transaction: invalid opcode');
     })
   })
 

@@ -7,6 +7,7 @@ contract('ADXToken', function(accounts) {
   var crowdsale;
 
   var EXPECT_FOR_ONE_ETH = 11700000;
+  var EXPECT_FOR_ONE_ETH_STANDARD = 9000000;
 
   var startDate;
   var ownerAddr = web3.eth.accounts[0];
@@ -19,7 +20,7 @@ contract('ADXToken', function(accounts) {
   var participiants = web3.eth.accounts.slice(4, 7).map(account => {
     return {
       account: account,
-      sent: web3.toWei(1, 'ether')
+      sent: web3.toWei(10, 'ether')
     }
   })
 
@@ -127,7 +128,7 @@ contract('ADXToken', function(accounts) {
     })
   })
 
-  it('Should allow to send ETH in exchange of Tokens', () => {
+  it('Should allow to send ETH in exchange of Tokens at start of crowdsale', () => {
     const currentParticipiants = participiants.slice(0, 3)
 
     return Promise.all(currentParticipiants.map(participiant => {
@@ -135,13 +136,13 @@ contract('ADXToken', function(accounts) {
         web3.eth.sendTransaction({
           from: participiant.account,
           to: crowdsale.address,
-          value: participiant.sent,
+          value: web3.toWei(0.1, 'ether'),
           gas: 130000
         }, (err) => {
           if (err) reject(err) 
           
           crowdsale.balanceOf(participiant.account).then(function(res) {
-            assert.equal(res.valueOf(), EXPECT_FOR_ONE_ETH);
+            assert.equal(res.valueOf(), 0.1 * EXPECT_FOR_ONE_ETH);
             resolve()
           })
 
@@ -164,11 +165,76 @@ contract('ADXToken', function(accounts) {
         crowdsale.balanceOf.call(web3.eth.accounts[4]),
         crowdsale.balanceOf.call(web3.eth.accounts[5]),
         (toBalance, fromBalance) => {
-            assert.equal(toBalance.valueOf(), EXPECT_FOR_ONE_ETH)
-            assert.equal(fromBalance.valueOf(), EXPECT_FOR_ONE_ETH)
+            assert.equal(toBalance.valueOf(), 0.1 * EXPECT_FOR_ONE_ETH)
+            assert.equal(fromBalance.valueOf(), 0.1 * EXPECT_FOR_ONE_ETH)
 
         }
       )
+    })
+  })
+
+  it('Change time to 29 days after begginning of crowdsale', () => {
+    return new Promise((resolve, reject) => {
+         web3.currentProvider.sendAsync({
+          jsonrpc: "2.0",
+          method: "evm_increaseTime",
+          params: [29*24*60*60],
+          id: new Date().getTime()
+        }, (err, result) => {
+          err? reject(err) : resolve()
+        })
+    })
+  })
+
+  it('Should allow to send ETH in exchange of Tokens before end of crowdsale', () => {
+    const currentParticipiants = participiants.slice(0, 3)
+
+    return Promise.all(currentParticipiants.map(participiant => {
+      return new Promise((resolve, reject) => {
+        web3.eth.sendTransaction({
+          from: participiant.account,
+          to: crowdsale.address,
+          value: web3.toWei(0.1, 'ether'),
+          gas: 130000
+        }, (err) => {
+          if (err) reject(err)
+
+          crowdsale.balanceOf(participiant.account).then(function(res) {
+            assert.equal(res.valueOf(), 0.1 * (EXPECT_FOR_ONE_ETH + EXPECT_FOR_ONE_ETH_STANDARD));
+            resolve()
+          })
+
+        })
+      })
+    }))
+  })
+
+  it('Change time to 30 days after begginning of crowdsale', () => {
+    return new Promise((resolve, reject) => {
+         web3.currentProvider.sendAsync({
+          jsonrpc: "2.0",
+          method: "evm_increaseTime",
+          params: [1*24*60*60],
+          id: new Date().getTime()
+        }, (err, result) => {
+          err? reject(err) : resolve()
+        })
+    })
+  })
+
+  it("Should not allow to send ETH in exchange of Tokens after crowdsale end", function() {
+    const currentParticipiants = participiants.slice(0, 3)
+
+    return new Promise((resolve, reject) => {
+      web3.eth.sendTransaction({
+        from: currentParticipiants[0].account,
+        to: crowdsale.address,
+        value: web3.toWei(0.1, 'ether'),
+        gas: 130000
+      })
+    }).then(function() { throw new Error('Cant be here'); })
+    .catch(function(err) {
+      assert.equal(err.message, 'VM Exception while processing transaction: invalid opcode');
     })
   })
 
@@ -188,7 +254,7 @@ contract('ADXToken', function(accounts) {
   it("should track raised eth", function() {
     return crowdsale.etherRaised.call()
     .then(function(eth) {        
-        assert.equal(eth.valueOf(), 6030333000000000000); // preBuy eth + 3 eth 
+        assert.equal(eth.valueOf(), 3630333000000000000); // preBuy eth + 1.2 eth
     })
   });
 
@@ -201,8 +267,8 @@ contract('ADXToken', function(accounts) {
         crowdsale.balanceOf.call(web3.eth.accounts[4]),
         crowdsale.balanceOf.call(web3.eth.accounts[5]),
         (toBalance, fromBalance) => {
-            assert.equal(toBalance.valueOf(), EXPECT_FOR_ONE_ETH+50)
-            assert.equal(fromBalance.valueOf(), EXPECT_FOR_ONE_ETH-50)
+            assert.equal(toBalance.valueOf(), 0.1 * (EXPECT_FOR_ONE_ETH + EXPECT_FOR_ONE_ETH_STANDARD) + 50)
+            assert.equal(fromBalance.valueOf(), 0.1 * (EXPECT_FOR_ONE_ETH + EXPECT_FOR_ONE_ETH_STANDARD) - 50)
         }
       )
     })
