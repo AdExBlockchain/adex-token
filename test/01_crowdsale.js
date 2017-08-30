@@ -214,7 +214,7 @@ contract('ADXToken', function(accounts) {
          web3.currentProvider.sendAsync({
           jsonrpc: "2.0",
           method: "evm_increaseTime",
-          params: [1*24*60*60],
+          params: [1*24*60*60 + 60],
           id: new Date().getTime()
         }, (err, result) => {
           err? reject(err) : resolve()
@@ -231,6 +231,8 @@ contract('ADXToken', function(accounts) {
         to: crowdsale.address,
         value: web3.toWei(0.1, 'ether'),
         gas: 130000
+      },(err, result) => {
+        err? reject(err) : resolve()
       })
     }).then(function() { throw new Error('Cant be here'); })
     .catch(function(err) {

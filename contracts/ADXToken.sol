@@ -18,9 +18,10 @@ contract ADXToken is VestedToken {
 
   //CONSTANTS
   //Time limits
+  uint public constant CROWDSALE_DURATION = 30 days;
   uint public constant STAGE_ONE_TIME_END = 24 hours; // first day bonus
   uint public constant STAGE_TWO_TIME_END = 1 weeks; // first week bonus
-  uint public constant STAGE_THREE_TIME_END = 30 days;
+  uint public constant STAGE_THREE_TIME_END = CROWDSALE_DURATION;
   
   // Multiplier for the decimals
   uint private constant DECIMALS = 10000;
@@ -118,7 +119,7 @@ contract ADXToken is VestedToken {
     ownerAddress = msg.sender;
     publicStartTime = _publicStartTime;
     privateStartTime = _privateStartTime;
-    publicEndTime = _publicStartTime + STAGE_THREE_TIME_END;
+    publicEndTime = _publicStartTime + CROWDSALE_DURATION;
     multisigAddress = _multisig;
     adexTeamAddress = _adexTeam;
 
