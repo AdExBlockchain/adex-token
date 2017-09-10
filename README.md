@@ -8,11 +8,13 @@ This is the implementation of ADX, deployed at [this address](https://etherscan.
 ADX is an ERC20-compatible token built on OpenZeppelin's VestedToken
 
 
-### Known issues (in production)
+### Known issues (in production, mainnet deployment)
 
-Those issues are deployed in production, but fixed in this repository.
+Those issues are deployed in production, but **fixed** in this repository.
 
 * `totalSupply` is not defined, therefore 0; severity: minor, just missing meta
+
+
 
 ### Audit
 
