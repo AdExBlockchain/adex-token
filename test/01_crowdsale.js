@@ -201,7 +201,7 @@ contract('ADXToken', function(accounts) {
   it("should track raised eth", function() {
     return crowdsale.etherRaised.call()
     .then(function(eth) {        
-        assert.equal(eth.valueOf(), 10188734000000000000); // preBuy eth + 3 eth 
+        assert.equal(eth.valueOf(), 10188734000000000000); // preBuy eth + 2 eth 
     })
   });
 
