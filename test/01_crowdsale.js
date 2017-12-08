@@ -15,6 +15,12 @@ contract('ADXToken', function(accounts) {
   var adexFundAddr = web3.eth.accounts[8];
   var prebuyAddr = web3.eth.accounts[1]; 
 
+  var PREBUY_ETH_1 = 3.030333
+  var PREBUY_ETH_2 = 3.690000
+  var PREBUY_ETH_3 = 1.468401
+
+  var putInThroughSale = 0
+ 
   // accounts 4, 5
   var participiants = web3.eth.accounts.slice(4, 6).map(account => {
     return {
@@ -123,9 +129,9 @@ contract('ADXToken', function(accounts) {
       })
     };
   }
-  it("pre-buy state: can pre-buy (addr1), vested tokens are properly vested", preBuyTest(15295105, 50750001, 3.030333, web3.eth.accounts[1]));
-  it("pre-buy state: can pre-buy (addr2), vested tokens are properly vested", preBuyTest( 7577001, 50750001, 3.690000, web3.eth.accounts[2]));
-  it("pre-buy state: can pre-buy (addr3), vested tokens are properly vested", preBuyTest( 3436058, 20616350, 1.468401, web3.eth.accounts[3]));
+  it("pre-buy state: can pre-buy (addr1), vested tokens are properly vested", preBuyTest(15295105, 50750001, PREBUY_ETH_1, web3.eth.accounts[1]));
+  it("pre-buy state: can pre-buy (addr2), vested tokens are properly vested", preBuyTest( 7577001, 50750001, PREBUY_ETH_2, web3.eth.accounts[2]));
+  it("pre-buy state: can pre-buy (addr3), vested tokens are properly vested", preBuyTest( 3436058, 20616350, PREBUY_ETH_3, web3.eth.accounts[3]));
 
   it('Change time to crowdsale open', () => {
     return new Promise((resolve, reject) => {
@@ -141,7 +147,7 @@ contract('ADXToken', function(accounts) {
   })
 
   it('Should allow to send ETH in exchange of Tokens', () => {
-    const currentParticipiants = participiants.slice(0, 3)
+    const currentParticipiants = participiants.slice(0, 2)
 
     return Promise.all(currentParticipiants.map(participiant => {
       return new Promise((resolve, reject) => {
@@ -153,6 +159,8 @@ contract('ADXToken', function(accounts) {
         }, (err) => {
           if (err) reject(err) 
           
+          putInThroughSale += parseInt(participiant.sent)
+
           crowdsale.balanceOf(participiant.account).then(function(res) {
             assert.equal(res.valueOf(), EXPECT_FOR_ONE_ETH);
             resolve()
@@ -201,7 +209,8 @@ contract('ADXToken', function(accounts) {
   it("should track raised eth", function() {
     return crowdsale.etherRaised.call()
     .then(function(eth) {        
-        assert.equal(eth.valueOf(), 10188734000000000000); // preBuy eth + 2 eth 
+      var expected = putInThroughSale + (PREBUY_ETH_1+PREBUY_ETH_2+PREBUY_ETH_3)*Math.pow(10,18)
+      assert.equal(eth.valueOf(), expected); // preBuy eth + 2 eth 
     })
   });
 
