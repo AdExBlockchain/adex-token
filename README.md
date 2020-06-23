@@ -18,4 +18,4 @@ Those issues are deployed in production, but **fixed** in this repository.
 
 ### Audit
 
-This repository passed audit by NewAlchemy.io ; full report is published here: [AdAEx Audit](/AdExAudit.pdf).
+This repository passed audit by NewAlchemy.io; full report is published here: [AdEx Audit](/AdExAudit.pdf).
